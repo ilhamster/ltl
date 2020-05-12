@@ -32,14 +32,13 @@ func StopAtFirstMatch(tok ltl.Token, op ltl.Operator) (ltl.Operator, ltl.Environ
 	return op, env
 }
 
-// StopAtFirstMatch matches the provided Operator with the provided Token.
+// StopAtFirstNotMatch matches the provided Operator with the provided Token.
 // The resulting Operation and Environment are returned, except if the
-// Environment is Matching, in which case a nil Operator is returned.  This
+// Environment is not Matching, in which case a nil Operator is returned.  This
 // helps Operators terminate as soon as they've matched, a necessary property
 // for temporal operators like Then to work.
 func StopAtFirstNotMatch(tok ltl.Token, op ltl.Operator) (ltl.Operator, ltl.Environment) {
 	op, env := op.Match(tok)
-	// fmt.Printf("%senv %s\n", PrettyPrint(op), env)
 	if !env.Matching() {
 		op = nil
 	}
