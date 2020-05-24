@@ -1,4 +1,4 @@
-# ltl: a Linear Temporal Logic package
+# `ltl`: a Linear Temporal Logic package
 
 Linear temporal logic (LTL) is a logic system extending the set of basic
 propositional logic operators (`AND`, `OR`, `NOT`) with new operators describing
@@ -21,6 +21,11 @@ to provide a search interface for streams of trace data.  It includes:
  * [pkg/parser](./docs/parsing.md): A simple parser capable of lexing and
    parsing LTL expressions, and with some support for arbitrary matchers.
 
+To get started using `ltl`, see the
+[Getting Started Guide](./docs/getting_started.md)
+
 ## Disclaimer
 
-This project is not an official Google project.  It is not supported by Google and Google specifically disclaims all warranties as to its quality, merchantability, or fitness for a particular purpose.
+This project is not an official Google project.  It is not supported by Google
+and Google specifically disclaims all warranties as to its quality,
+merchantability, or fitness for a particular purpose.

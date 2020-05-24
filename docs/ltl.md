@@ -21,7 +21,7 @@ newOp, env := op.Match(tok)
 ```
 
 in which an `Operator` (`op`) accepts a new `Token` in the input stream (`tok`),
-and returns an Environment (`env`) conveying the match status of the receiver
+and returns an `Environment` (`env`) conveying the match status of the receiver
 after the `Token` is consumed.  It also returns a new `Operator` which, if
 non-nil, reflects the closure of the receiver after the `Token` was consumed.
 `Operator`s may need to consume multiple `Token`s before they can determine
@@ -37,10 +37,10 @@ streams.  For more detail, see [Streaming](#streaming).
 
 Users of this package must provide at least two things:
 
-* An input type implementing Token;
+* An input type implementing `Token`;
 
-* At least one *matcher*: a terminal Operation that consumes one or more
-Tokens and returns a resolved Environment.
+* At least one *matcher*: a terminal `Operation` that consumes one or more
+Tokens and returns a resolved `Environment`.
 
 `ltl.State`, an enumeration of possible match states, also implements
 `Environment`, and may be used for simple applications.  The

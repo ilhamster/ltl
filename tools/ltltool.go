@@ -127,7 +127,6 @@ const (
 	kCase    = "case"
 	kExplain = "explain"
 	kHelp    = "help"
-	kMatches = "matches"
 	kOp      = "op"
 	kQuit    = "quit"
 	kRun     = "run"
