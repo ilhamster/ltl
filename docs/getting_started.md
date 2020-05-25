@@ -79,7 +79,7 @@ So, matching three of the same token in a row is expressed as
 
 This syntax is used throughout this documentation.
 
-## ltltool
+## `ltltool`
 
 `tools/ltltool.go` provides a way to quickly start experimenting with LTL
 queries.  It uses `pkg/parser` to parse expressions, with matchers provided by
