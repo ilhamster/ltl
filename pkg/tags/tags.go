@@ -47,7 +47,7 @@ func New(tags ...Tag) *Tags {
 	return newSorted(tags...)
 }
 
-func (t *Tags) tags() []Tag {
+func (t *Tags) Tags() []Tag {
 	if t == nil {
 		return nil
 	}
@@ -56,14 +56,14 @@ func (t *Tags) tags() []Tag {
 
 func (t *Tags) String() string {
 	ret := make([]string, 0, t.Length())
-	for _, tag := range t.tags() {
+	for _, tag := range t.Tags() {
 		ret = append(ret, tag.String())
 	}
 	return fmt.Sprintf("[%s]", strings.Join(ret, ", "))
 }
 
 func (t *Tags) Length() int {
-	return len(t.tags())
+	return len(t.Tags())
 }
 
 func (t *Tags) Union(ot *Tags) *Tags {
@@ -76,7 +76,7 @@ func (t *Tags) Union(ot *Tags) *Tags {
 	ret := make([]Tag, 0, t.Length()+ot.Length())
 	tIdx, otIdx := 0, 0
 	for tIdx < t.Length() && otIdx < ot.Length() {
-		tT, otT := t.tags()[tIdx], ot.tags()[otIdx]
+		tT, otT := t.Tags()[tIdx], ot.Tags()[otIdx]
 		cmp := tT.Compare(otT)
 		if cmp < 0 {
 			ret = append(ret, tT)
@@ -90,8 +90,8 @@ func (t *Tags) Union(ot *Tags) *Tags {
 			otIdx++
 		}
 	}
-	ret = append(ret, t.tags()[tIdx:]...)
-	ret = append(ret, ot.tags()[otIdx:]...)
+	ret = append(ret, t.Tags()[tIdx:]...)
+	ret = append(ret, ot.Tags()[otIdx:]...)
 	return newSorted(ret...)
 }
 
@@ -100,7 +100,7 @@ func (t *Tags) Eq(ot *Tags) bool {
 		return false
 	}
 	for idx := 0; idx < t.Length(); idx++ {
-		if t.tags()[idx].Compare(ot.tags()[idx]) != 0 {
+		if t.Tags()[idx].Compare(ot.Tags()[idx]) != 0 {
 			return false
 		}
 	}

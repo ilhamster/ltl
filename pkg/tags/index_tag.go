@@ -45,6 +45,13 @@ func (it *indexTag) Compare(ot Tag) int {
 	return strings.Compare(it.Type(), ot.Type())
 }
 
+func IndexOf(t Tag) (int, bool) {
+	if it, ok := t.(*indexTag); ok {
+		return it.index, true
+	}
+	return 0, false
+}
+
 // Index returns a new index tag with the provided Index.
 func Index(index int) *indexTag {
 	return &indexTag{
