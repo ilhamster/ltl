@@ -36,7 +36,6 @@ func benchmarkEggLeg(b *testing.B, count int, profFile string) {
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
-	tagIndices = false
 	tests := []struct {
 		input          string
 		op             ltl.Operator

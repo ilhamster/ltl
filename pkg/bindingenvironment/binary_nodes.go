@@ -18,7 +18,8 @@ import (
 	"fmt"
 	"ltl/pkg/bindings"
 	"ltl/pkg/ltl"
-	"ltl/pkg/tags"
+	"sort"
+	"strings"
 )
 
 type nodeType bool
@@ -30,7 +31,6 @@ const (
 
 type binaryNode struct {
 	bound       *bindings.Bindings
-	tagged      *tags.Tags
 	left, right ltl.Environment
 	hasRefs     bool
 	matching    bool
@@ -45,7 +45,17 @@ func (bn *binaryNode) String() string {
 	case andNode:
 		ret = "BE_AND"
 	}
-	return ret + fmt.Sprintf("(r:%t\n    | M%t/%s,\n    | %s,\n    | %s)", bn.hasRefs, bn.Matching(), bn.bound, bn.left, bn.right)
+	capStrs := []string{}
+	caps := bn.captures()
+	if caps != nil {
+		for cap := range caps {
+			capStrs = append(capStrs, cap.String())
+		}
+		sort.Slice(capStrs, func(a, b int) bool {
+			return capStrs[a] < capStrs[b]
+		})
+	}
+	return ret + fmt.Sprintf("(r:%t\n    | M%t/%s,\n     |C[%s] | %s,\n    | %s)", bn.hasRefs, bn.Matching(), bn.bound, strings.Join(capStrs, ", "), bn.left, bn.right)
 }
 
 func (bn *binaryNode) And(oe ltl.Environment) ltl.Environment {
@@ -85,12 +95,19 @@ func (bn *binaryNode) Err() error {
 	return nil
 }
 
-func (bn *binaryNode) bindings() *bindings.Bindings {
-	return bn.bound
+func (bn *binaryNode) captures() map[ltl.Token]struct{} {
+	var left, right map[ltl.Token]struct{}
+	if bn.left.Matching() {
+		left = Captures(bn.left)
+	}
+	if bn.right.Matching() {
+		right = Captures(bn.right)
+	}
+	return UnionCaps(left, right)
 }
 
-func (bn *binaryNode) tags() *tags.Tags {
-	return bn.tagged
+func (bn *binaryNode) bindings() *bindings.Bindings {
+	return bn.bound
 }
 
 func (bn *binaryNode) hasReferences() bool {
@@ -113,7 +130,7 @@ func (bn *binaryNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
 	if !ok {
 		return nil, false
 	}
-	// If the rolled-up properties are not equal, the two are not equal/
+	// If the rolled-up properties are not equal, the two are not equal.
 	if bn.t != obn.t ||
 		bn.matching != obn.matching ||
 		bn.hasRefs != obn.hasRefs ||
@@ -133,7 +150,6 @@ func (bn *binaryNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
 	}
 	return &binaryNode{
 		bound:    bn.bound,
-		tagged:   bn.tagged.Union(obn.tagged),
 		left:     newL,
 		right:    newR,
 		hasRefs:  bn.hasRefs,
@@ -169,7 +185,6 @@ func and(left, right ltl.Environment) ltl.Environment {
 	}
 	return &binaryNode{
 		bound:    newB,
-		tagged:   Tags(left).Union(Tags(right)),
 		left:     left,
 		right:    right,
 		hasRefs:  hasRefs,
@@ -205,7 +220,6 @@ func or(left, right ltl.Environment) ltl.Environment {
 	}
 	return &binaryNode{
 		bound:    newB,
-		tagged:   Tags(left).Union(Tags(right)),
 		left:     left,
 		right:    right,
 		hasRefs:  hasRefs,

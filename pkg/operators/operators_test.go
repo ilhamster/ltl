@@ -21,10 +21,8 @@ import (
 	"testing"
 )
 
-var tagIndices = true
-
 func sm(s string) ltl.Operator {
-	return smatch.New(s, smatch.TagIndices(tagIndices))
+	return smatch.New(s)
 }
 
 type testInput struct {
@@ -41,7 +39,6 @@ func nm(s string) testInput {
 }
 
 func TestOperators(t *testing.T) {
-	tagIndices = true
 	type testCase struct {
 		op         ltl.Operator
 		testInputs []testInput

@@ -25,14 +25,13 @@ import (
 	"ltl/pkg/ltl"
 	ops "ltl/pkg/operators"
 	"ltl/pkg/parser"
-	"ltl/pkg/tags"
 	"strings"
 	"testing"
 )
 
 func parse(s string) (ltl.Operator, error) {
 	l, err := parser.NewLexer(parser.DefaultTokens,
-		smatch.Generator(smatch.TagIndices(true)),
+		smatch.Generator(smatch.Capture(true)),
 		bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		return nil, err
@@ -45,7 +44,7 @@ type testInput struct {
 	wantBindings *bindings.Bindings
 	wantMatch    bool
 	wantErr      bool
-	wantTags     *tags.Tags
+	wantIndices  map[int]struct{}
 }
 
 func b(args ...string) func(*testInput) {
@@ -66,12 +65,11 @@ func b(args ...string) func(*testInput) {
 }
 
 func i(args ...int) func(*testInput) {
-	idxs := make([]tags.Tag, 0, len(args))
-	for _, idx := range args {
-		idxs = append(idxs, tags.Index(idx))
-	}
 	return func(ti *testInput) {
-		ti.wantTags = tags.New(idxs...)
+		ti.wantIndices = map[int]struct{}{}
+		for _, idx := range args {
+			ti.wantIndices[idx] = struct{}{}
+		}
 	}
 }
 
@@ -143,8 +141,21 @@ func expect(op ltl.Operator, input *testInput, t *testing.T) {
 	if !input.wantBindings.Eq(be.Bindings(env)) {
 		t.Fatalf("Wanted Environment bindings %s, got %s", input.wantBindings, be.Bindings(env))
 	}
-	if !input.wantTags.Eq(be.Tags(env)) {
-		t.Fatalf("Wanted Environment tags %s, got %s", input.wantTags, be.Tags(env))
+	captured := be.Captures(env)
+	if len(input.wantIndices) != len(captured) {
+		fmt.Println(op)
+		be.PrettyPrint(env)
+		t.Fatalf("Wanted %d captures, got %d", len(input.wantIndices), len(captured))
+	}
+	if input.wantIndices != nil && captured != nil {
+		for tok := range captured {
+			if rt, ok := tok.(*rt.RuneToken); ok {
+				if _, ok := input.wantIndices[rt.Index()]; !ok {
+					t.Fatalf("Captured unexpected index %d", rt.Index())
+				}
+			}
+		}
+
 	}
 	if env.Err() != nil {
 		t.Fatalf("MatchOnBindings yielded unexpected error %s", env.Err())

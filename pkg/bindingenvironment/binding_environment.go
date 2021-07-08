@@ -17,22 +17,18 @@
 package bindingenvironment
 
 import (
-    // "fmt"
     "ltl/pkg/bindings"
     "ltl/pkg/ltl"
-    "ltl/pkg/tags"
 )
 
 // bindingEnvironment describes an Environment capable of binding values to
 // names.
 type bindingEnvironment interface {
     ltl.Environment
-    // Bindings returns the set of Bindings in this Environment.  Bindings are
+    captures() map[ltl.Token]struct{}
+    // bindings returns the set of Bindings in this Environment.  Bindings are
     // only provided by matching Environments.
     bindings() *bindings.Bindings
-    // Tags returns the set of Tags associated with this Environment.  Tags are
-    // only provided by matching Environments.
-    tags() *tags.Tags
     // hasReference returns true iff this bindingEnvironment contains
     // references, either directly or indirectly.
     hasReferences() bool
@@ -49,9 +45,16 @@ type bindingEnvironment interface {
     // equivalent (possibly with a different order.)  If the two Environments
     // are not equivalent, merge returns false, meaning the Environments cannot
     // be merged.
-    // Tags are not considered for equivalence, and the returned Environment's
-    // Tags are the union of the two arguments'.
     merge(oe ltl.Environment) (bindingEnvironment, bool)
+}
+
+// Captures returns the set of captured Tokens in the provided Environment, or
+// nil if no tokens are captured.
+func Captures(env ltl.Environment) map[ltl.Token]struct{} {
+    if be, ok := env.(bindingEnvironment); ok {
+        return be.captures()
+    }
+    return nil
 }
 
 // Bindings returns the set of Bindings bound by the provided Environment.  If
@@ -59,15 +62,6 @@ type bindingEnvironment interface {
 func Bindings(env ltl.Environment) *bindings.Bindings {
     if be, ok := env.(bindingEnvironment); ok {
         return be.bindings()
-    }
-    return nil
-}
-
-// Tags returns the set of Tags tagged by the provided Environment.  If the
-// provided Environment is not binding, a nil Tags is returned.
-func Tags(env ltl.Environment) *tags.Tags {
-    if be, ok := env.(bindingEnvironment); ok {
-        return be.tags()
     }
     return nil
 }
@@ -100,4 +94,22 @@ func merge(a, b ltl.Environment) (bindingEnvironment, bool) {
         return be.merge(b)
     }
     return nil, false
+}
+
+func UnionCaps(a, b map[ltl.Token]struct{}) map[ltl.Token]struct{} {
+    if a == nil && b == nil {
+        return nil
+    }
+    newCaps := map[ltl.Token]struct{}{}
+    if a != nil {
+        for cap := range a {
+            newCaps[cap] = struct{}{}
+        }
+    }
+    if b != nil {
+        for cap := range b {
+            newCaps[cap] = struct{}{}
+        }
+    }
+    return newCaps
 }

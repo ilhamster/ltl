@@ -21,14 +21,14 @@ import (
 	be "ltl/pkg/bindingenvironment"
 	"ltl/pkg/bindings"
 	"ltl/pkg/ltl"
-	"ltl/pkg/tags"
 )
 
 // extractFunc extracts the bindings and tags from a token.
-type extractFunc func(name string, tok ltl.Token) (*bindings.Bindings, *tags.Tags, error)
+type extractFunc func(name string, tok ltl.Token) (*bindings.Bindings, error)
 
 type binder struct {
 	name         string
+	capture      bool
 	extractToken extractFunc
 }
 
@@ -36,13 +36,15 @@ func (b *binder) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	if tok.EOI() {
 		return nil, be.New(be.Matching(false))
 	}
-	bs, tags, err := b.extractToken(b.name, tok)
+	bs, err := b.extractToken(b.name, tok)
 	if err != nil {
 		return nil, ltl.ErrEnv(err)
 	}
-	return nil, be.New(
-		be.Tagged(tags),
-		be.Bound(bs))
+	ops := []be.Option{be.Bound(bs)}
+	if b.capture {
+		ops = append(ops, be.Captured(tok))
+	}
+	return nil, be.New(ops...)
 }
 
 func (b *binder) String() string {
@@ -59,13 +61,15 @@ func (r *referencer) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	if tok.EOI() {
 		return nil, ltl.NotMatching
 	}
-	bs, tags, err := r.extractToken(r.name, tok)
+	bs, err := r.extractToken(r.name, tok)
 	if err != nil {
 		return nil, ltl.ErrEnv(err)
 	}
-	return nil, be.New(
-		be.Tagged(tags),
-		be.Referenced(bs))
+	ops := []be.Option{be.Referenced(bs)}
+	if r.capture {
+		ops = append(ops, be.Captured(tok))
+	}
+	return nil, be.New(ops...)
 }
 
 func (r *referencer) String() string {
@@ -79,26 +83,28 @@ func (r *referencer) Reducible() bool {
 // Builder provides methods to generate binding and referencing Operators.
 type Builder struct {
 	extractToken extractFunc
+	capture      bool
 }
 
 // NewBuilder returns a Builder that uses the provided extraction function to
 // generate binding and referencing Operators.
-func NewBuilder(extractToken func(name string, tok ltl.Token) (*bindings.Bindings, *tags.Tags, error)) *Builder {
+func NewBuilder(capture bool, extractToken func(name string, tok ltl.Token) (*bindings.Bindings, error)) *Builder {
 	return &Builder{
 		extractToken: extractToken,
+		capture:      capture,
 	}
 }
 
 // Bind returns an Operator which, on Match, applies the receiver's extraction
-// function to the Token to extract its bindings and tags, returning a matching
-// Environment with those bindings and tags.
+// function to the Token to extract its bindings, returning a matching
+// Environment with those bindings.
 func (bb *Builder) Bind(name string) *binder {
-	return &binder{name: name, extractToken: bb.extractToken}
+	return &binder{name: name, capture: bb.capture, extractToken: bb.extractToken}
 }
 
 // Reference returns an Operator which, on Match, applies the receiver's
-// extraction function to the Token to extract its bindings and tags, returning
-// a non-matching Environment with those tags, and referencing those bindings.
+// extraction function to the Token to extract its bindings, returning a
+// non-matching Environment with those, and referencing those bindings.
 func (bb *Builder) Reference(name string) *referencer {
-	return &referencer{name: name, extractToken: bb.extractToken}
+	return &referencer{name: name, capture: bb.capture, extractToken: bb.extractToken}
 }

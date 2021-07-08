@@ -110,3 +110,62 @@ func TestBindingCombinations(t *testing.T) {
 		})
 	}
 }
+
+type strTok string
+
+func (st strTok) String() string {
+	return string(st)
+}
+
+func (st strTok) EOI() bool {
+	return false
+}
+
+func cap(matching bool, args ...string) bindingEnvironment {
+	toks := []ltl.Token{}
+	for _, arg := range args {
+		toks = append(toks, strTok(arg))
+	}
+	return New(Matching(matching), Captured(toks...))
+}
+
+func strs(strs ...string) map[string]struct{} {
+	if len(strs) == 0 {
+		return nil
+	}
+	ret := map[string]struct{}{}
+	for _, str := range strs {
+		ret[str] = struct{}{}
+	}
+	return ret
+}
+
+func TestCaptures(t *testing.T) {
+	tests := []struct {
+		env          ltl.Environment
+		wantCaptures map[string]struct{}
+	}{
+		{cap(true, "a").Or(cap(true, "b")), strs("a", "b")},
+		{cap(false, "a").Or(cap(true, "b")), strs("b")},
+	}
+	for idx, test := range tests {
+		t.Run(fmt.Sprintf("test case %d", idx), func(t *testing.T) {
+			PrettyPrint(test.env)
+			gotCaptures := Captures(test.env)
+			if len(gotCaptures) != len(test.wantCaptures) {
+				t.Fatalf("Wanted %d captures, got %d", len(test.wantCaptures), len(gotCaptures))
+			}
+			if gotCaptures != nil && test.wantCaptures != nil {
+				for cap := range gotCaptures {
+					if st, ok := cap.(strTok); !ok {
+						t.Fatalf("Expected all captures to be strToks")
+					} else {
+						if _, ok := test.wantCaptures[st.String()]; !ok {
+							t.Fatalf("Unexpected capture %s", st)
+						}
+					}
+				}
+			}
+		})
+	}
+}

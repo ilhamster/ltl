@@ -38,7 +38,7 @@ var (
 type ltlif struct {
 	op                                ltl.Operator
 	expEnv, expMatches, expOp, expTok bool
-	tagIndices                        bool
+	capture                           bool
 	caseSensitive                     bool
 }
 
@@ -48,7 +48,7 @@ func newIf() *ltlif {
 
 func (lif *ltlif) parse(s string) (ltl.Operator, error) {
 	l, err := parser.NewLexer(parser.DefaultTokens,
-		smatch.Generator(smatch.TagIndices(lif.tagIndices), smatch.CaseSensitive(lif.caseSensitive)),
+		smatch.Generator(smatch.Capture(lif.capture), smatch.CaseSensitive(lif.caseSensitive)),
 		bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ const (
 	kOp      = "op"
 	kQuit    = "quit"
 	kRun     = "run"
-	kTag     = "tag"
+	kCapture = "capture"
 )
 
 func (lif *ltlif) do(in string) {
@@ -185,18 +185,18 @@ func (lif *ltlif) do(in string) {
 		default:
 			break
 		}
-	case kTag:
-		lif.tagIndices = !lif.tagIndices
-		msg := "Match indices will "
-		if !lif.tagIndices {
+	case kCapture:
+		lif.capture = !lif.capture
+		msg := "In new operations, matching tokens will "
+		if !lif.capture {
 			msg = msg + "not "
 		}
-		msg = msg + "be tagged."
+		msg = msg + "be captured."
 		fmt.Println(msg)
 		return
 	case kCase:
 		lif.caseSensitive = !lif.caseSensitive
-		msg := "String matches will "
+		msg := "In new operations, string matches will "
 		if !lif.caseSensitive {
 			msg = msg + "not "
 		}
@@ -213,7 +213,7 @@ Set an operation, then feed it inputs.
                     Print environments produced at each token, matches made on
                     each token, operations invoked, tokens read, everything, or
                     nothing.
-  tag             : Toggle whether indices should be tagged in matches.
+  capture         : Toggle whether matching tokens should be captured.
   case            : Toggle whether string matches should be case-sensitive.
   quit            : (or ctrl-C) exit ltltool.`)
 		return

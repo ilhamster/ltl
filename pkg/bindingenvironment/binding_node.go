@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"ltl/pkg/bindings"
 	"ltl/pkg/ltl"
-	"ltl/pkg/tags"
+	"sort"
 	"strings"
 )
 
@@ -27,7 +27,7 @@ import (
 // values is immediately simplified to a simple Matching Environment.
 type bindingNode struct {
 	matching   bool
-	tagged     *tags.Tags
+	captured   map[ltl.Token]struct{}
 	bound      *bindings.Bindings
 	referenced *bindings.Bindings
 }
@@ -42,11 +42,13 @@ func Matching(m bool) Option {
 	}
 }
 
-// Tags merges the provided tags into the bindingEnvironment.  Defaults to
-// no tags.
-func Tagged(t *tags.Tags) Option {
+// Captured sets the bindingEnvironment's captured tokens.
+func Captured(toks ...ltl.Token) Option {
 	return func(bn *bindingNode) {
-		bn.tagged = bn.tagged.Union(t)
+		bn.captured = map[ltl.Token]struct{}{}
+		for _, tok := range toks {
+			bn.captured[tok] = struct{}{}
+		}
 	}
 }
 
@@ -67,12 +69,11 @@ func Referenced(r *bindings.Bindings) Option {
 }
 
 // New returns a new bindingNode with the requested arguments applied.
-// By default, the returned bindingNode is matching, and has no tags or bound
-// or referenced values.
+// By default, the returned bindingNode is matching, and has no bound or
+// referenced values.
 func New(opts ...Option) *bindingNode {
 	ret := &bindingNode{
 		matching:   true,
-		tagged:     nil,
 		bound:      nil,
 		referenced: nil,
 	}
@@ -91,8 +92,15 @@ func (bn *bindingNode) String() string {
 	if bn.referenced.Length() > 0 {
 		ret = append(ret, fmt.Sprintf("REF(%s)", bn.referenced))
 	}
-	if bn.tagged.Length() > 0 {
-		ret = append(ret, fmt.Sprintf("TAGS(%s)", bn.tagged))
+	if bn.captured != nil && len(bn.captured) > 0 {
+		capStrs := []string{}
+		for cap := range bn.captured {
+			capStrs = append(capStrs, cap.String())
+		}
+		sort.Slice(capStrs, func(a, b int) bool {
+			return capStrs[a] < capStrs[b]
+		})
+		ret = append(ret, fmt.Sprintf("CAP(%s)", strings.Join(capStrs, ", ")))
 	}
 	return fmt.Sprintf("(%s)", strings.Join(ret, ", "))
 }
@@ -112,7 +120,7 @@ func (bn *bindingNode) Not() ltl.Environment {
 	n.matching = !bn.matching
 	n.bound = bn.bound
 	n.referenced = bn.referenced
-	n.tagged = bn.tagged
+	n.captured = bn.captured
 	return n
 }
 
@@ -130,19 +138,16 @@ func (bn *bindingNode) Err() error {
 func (bn *bindingNode) Reducible() bool {
 	return bn.bound.Length() == 0 &&
 		bn.referenced.Length() == 0 &&
-		bn.tagged.Length() == 0
+		len(bn.captured) == 0
+}
+
+func (bn *bindingNode) captures() map[ltl.Token]struct{} {
+	return bn.captured
 }
 
 func (bn *bindingNode) bindings() *bindings.Bindings {
 	if bn.Matching() {
 		return bn.bound
-	}
-	return nil
-}
-
-func (bn *bindingNode) tags() *tags.Tags {
-	if bn.Matching() {
-		return bn.tagged
 	}
 	return nil
 }
@@ -162,7 +167,6 @@ func (bn *bindingNode) hasReferences() bool {
 //      receiver's references were satisfied by the provided Bindings;
 //    * the inverse of the receiver's matching field if the receiver's
 //      references were not satisfied by the provided Bindings.
-//  * its tags field set to the receiver's tags field.
 // For performance, where the returned value is identical to the receiver, the
 // receiver itself is returned.
 // applyBindings must return an ltl.Environment, as it could return an ErrEnv.
@@ -182,9 +186,9 @@ func (bn *bindingNode) applyBindings(b *bindings.Bindings) ltl.Environment {
 		}
 		// If there's no references, we can simply combine bindings and return.
 		new := New()
+		new.captured = bn.captured
 		new.matching = bn.matching
 		new.bound = newB
-		new.tagged = bn.tagged
 		return new
 	}
 	// Otherwise, we must satisfy references.
@@ -195,10 +199,10 @@ func (bn *bindingNode) applyBindings(b *bindings.Bindings) ltl.Environment {
 		s = !s
 	}
 	new := New()
+	new.captured = bn.captured
 	new.matching = s
 	new.bound = newB
 	new.referenced = newR
-	new.tagged = bn.tagged
 	return new
 }
 
@@ -208,10 +212,10 @@ func (bn *bindingNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
 			bn.bound.Eq(obn.bound) &&
 			bn.referenced.Eq(obn.referenced) {
 			new := New()
+			new.captured = UnionCaps(bn.captured, obn.captured)
 			new.matching = bn.matching
 			new.bound = bn.bound
 			new.referenced = bn.referenced
-			new.tagged = bn.tagged.Union(obn.tagged)
 			return new, true
 		}
 	}

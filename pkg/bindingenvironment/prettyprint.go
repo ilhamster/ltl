@@ -17,6 +17,8 @@ package bindingenvironment
 import (
 	"fmt"
 	"ltl/pkg/ltl"
+	"sort"
+	"strings"
 )
 
 // PrettyPrint pretty-prints bindingEnvironments for easier debugging.
@@ -40,7 +42,17 @@ func PrettyPrint(env ltl.Environment, prefix ...string) {
 		case orNode:
 			t = "OR"
 		}
-		fmt.Printf("Binding %s (%t) (b: %s)\n", t, v.Matching(), v.bound)
+		capStrs := []string{}
+		caps := Captures(env)
+		if caps != nil {
+			for cap := range caps {
+				capStrs = append(capStrs, cap.String())
+			}
+			sort.Slice(capStrs, func(a, b int) bool {
+				return capStrs[a] < capStrs[b]
+			})
+		}
+		fmt.Printf("Binding %s (%t) (b: %s) (c: %s)\n", t, v.Matching(), v.bound, strings.Join(capStrs, ", "))
 		PrettyPrint(v.left, prefixStr+"  ")
 		PrettyPrint(v.right, prefixStr+"  ")
 	case *bindingNode:

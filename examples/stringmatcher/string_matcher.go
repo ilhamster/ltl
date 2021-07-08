@@ -26,22 +26,21 @@ import (
 	be "ltl/pkg/bindingenvironment"
 	"ltl/pkg/bindings"
 	"ltl/pkg/ltl"
-	"ltl/pkg/tags"
 	"strings"
 )
 
 type config struct {
-	tagIndices    bool
 	caseSensitive bool
+	capture       bool
 }
 
 type Option func(c *config)
 
-// TagIndices specifies whether to add index tags for matches.  Defaults to
-// false.
-func TagIndices(tagIndices bool) Option {
+// Capture specifies whether matching tokens should be captured in the
+// Environment.
+func Capture(capture bool) Option {
 	return func(c *config) {
-		c.tagIndices = tagIndices
+		c.capture = capture
 	}
 }
 
@@ -78,33 +77,29 @@ func New(s string, opts ...Option) *stringMatcher {
 }
 
 func (sm *stringMatcher) matchInternal(rtok *rt.RuneToken) (ltl.Operator, ltl.Environment) {
-	var t *tags.Tags
-	if sm.c.tagIndices {
-		t = tags.New(tags.Index(rtok.Index()))
-	}
-	env := be.New(
-		be.Matching(false),
-		be.Tagged(t))
 	if len(sm.s) == 0 || rtok.EOI() {
-		return nil, env
+		return nil, be.New(be.Matching(false))
 	}
+	matching := false
 	var rem string
 	if sm.s[0] == '.' {
 		rem = sm.s[1:]
-		env = be.New(
-			be.Matching(true),
-			be.Tagged(t))
+		matching = true
+	} else {
+		val := string(rtok.Value())
+		if !sm.c.caseSensitive {
+			val = strings.ToLower(val)
+		}
+		if strings.HasPrefix(sm.s, string(val)) {
+			rem = strings.TrimPrefix(sm.s, string(val))
+			matching = len(rem) == 0
+		}
 	}
-	val := string(rtok.Value())
-	if !sm.c.caseSensitive {
-		val = strings.ToLower(val)
+	opts := []be.Option{be.Matching(matching)}
+	if sm.c.capture {
+		opts = append(opts, be.Captured(rtok))
 	}
-	if strings.HasPrefix(sm.s, string(val)) {
-		rem = strings.TrimPrefix(sm.s, string(val))
-		env = be.New(
-			be.Matching(len(rem) == 0),
-			be.Tagged(t))
-	}
+	env := be.New(opts...)
 	if len(rem) > 0 {
 		return new(rem, sm.c), env
 	}
@@ -124,7 +119,7 @@ func (sm stringMatcher) String() string {
 }
 
 func (sm *stringMatcher) Reducible() bool {
-	return !sm.c.tagIndices
+	return true
 }
 
 // Generator returns a generator function producing string matchers with the
@@ -135,18 +130,13 @@ func Generator(opts ...Option) func(s string) (ltl.Operator, error) {
 	for _, opt := range opts {
 		opt(c)
 	}
-
-	bindingBuilder := binder.NewBuilder(func(name string, tok ltl.Token) (*bindings.Bindings, *tags.Tags, error) {
+	bindingBuilder := binder.NewBuilder(c.capture, func(name string, tok ltl.Token) (*bindings.Bindings, error) {
 		rtok, ok := tok.(*rt.RuneToken)
 		if !ok {
-			return nil, nil, fmt.Errorf("failed to make Bindings: require *rt.RuneToken")
-		}
-		var t *tags.Tags
-		if c.tagIndices {
-			t = tags.New(tags.Index(rtok.Index()))
+			return nil, fmt.Errorf("failed to make Bindings: require *rt.RuneToken")
 		}
 		bs, err := bindings.New(bindings.String(name, string(rtok.Value())))
-		return bs, t, err
+		return bs, err
 	})
 
 	return func(s string) (ltl.Operator, error) {
