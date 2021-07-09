@@ -17,6 +17,7 @@ package bindingenvironment
 import (
 	"fmt"
 	"ltl/pkg/bindings"
+	"ltl/pkg/captures"
 	"ltl/pkg/ltl"
 	"sort"
 	"strings"
@@ -27,7 +28,7 @@ import (
 // values is immediately simplified to a simple Matching Environment.
 type bindingNode struct {
 	matching   bool
-	captured   map[ltl.Token]struct{}
+	caps       *captures.Captures
 	bound      *bindings.Bindings
 	referenced *bindings.Bindings
 }
@@ -38,17 +39,22 @@ type Option func(bn *bindingNode)
 // Matching sets whether the bindingEnvironment is matching.  Defaults to true.
 func Matching(m bool) Option {
 	return func(bn *bindingNode) {
-		bn.matching = m
+		if bn.matching != m {
+			bn.matching = m
+			bn.caps = bn.caps.Not()
+		}
 	}
 }
 
 // Captured sets the bindingEnvironment's captured tokens.
 func Captured(toks ...ltl.Token) Option {
 	return func(bn *bindingNode) {
-		bn.captured = map[ltl.Token]struct{}{}
+		cap := map[ltl.Token]struct{}{}
 		for _, tok := range toks {
-			bn.captured[tok] = struct{}{}
+			cap[tok] = struct{}{}
 		}
+		bn.caps = captures.New()
+		bn.caps.Capture(bn.matching, toks...)
 	}
 }
 
@@ -92,9 +98,11 @@ func (bn *bindingNode) String() string {
 	if bn.referenced.Length() > 0 {
 		ret = append(ret, fmt.Sprintf("REF(%s)", bn.referenced))
 	}
-	if bn.captured != nil && len(bn.captured) > 0 {
+	caps := bn.captures().Get(bn.matching)
+	// caps := bn.matchingCaptured
+	if caps != nil && len(caps) > 0 {
 		capStrs := []string{}
-		for cap := range bn.captured {
+		for cap := range caps {
 			capStrs = append(capStrs, cap.String())
 		}
 		sort.Slice(capStrs, func(a, b int) bool {
@@ -102,6 +110,20 @@ func (bn *bindingNode) String() string {
 		})
 		ret = append(ret, fmt.Sprintf("CAP(%s)", strings.Join(capStrs, ", ")))
 	}
+	// caps = bn.notMatchingCaptured
+	// // if !bn.matching {
+	// // 	caps = bn.matchingCaptured
+	// // }
+	// if caps != nil && len(caps) > 0 {
+	// 	capStrs := []string{}
+	// 	for cap := range caps {
+	// 		capStrs = append(capStrs, cap.String())
+	// 	}
+	// 	sort.Slice(capStrs, func(a, b int) bool {
+	// 		return capStrs[a] < capStrs[b]
+	// 	})
+	// 	ret = append(ret, fmt.Sprintf("-CAP(%s)", strings.Join(capStrs, ", ")))
+	// }
 	return fmt.Sprintf("(%s)", strings.Join(ret, ", "))
 }
 
@@ -120,7 +142,7 @@ func (bn *bindingNode) Not() ltl.Environment {
 	n.matching = !bn.matching
 	n.bound = bn.bound
 	n.referenced = bn.referenced
-	n.captured = bn.captured
+	n.caps = bn.caps.Not()
 	return n
 }
 
@@ -138,11 +160,11 @@ func (bn *bindingNode) Err() error {
 func (bn *bindingNode) Reducible() bool {
 	return bn.bound.Length() == 0 &&
 		bn.referenced.Length() == 0 &&
-		len(bn.captured) == 0
+		bn.caps.Reducible()
 }
 
-func (bn *bindingNode) captures() map[ltl.Token]struct{} {
-	return bn.captured
+func (bn *bindingNode) captures() *captures.Captures {
+	return bn.caps
 }
 
 func (bn *bindingNode) bindings() *bindings.Bindings {
@@ -186,21 +208,20 @@ func (bn *bindingNode) applyBindings(b *bindings.Bindings) ltl.Environment {
 		}
 		// If there's no references, we can simply combine bindings and return.
 		new := New()
-		new.captured = bn.captured
+		new.caps = bn.caps
 		new.matching = bn.matching
 		new.bound = newB
 		return new
 	}
+	new := New()
+	new.caps = bn.caps
+	new.matching = bn.matching
 	// Otherwise, we must satisfy references.
 	newR, satisfied := bn.referenced.Satisfy(newB)
-	s := bn.matching
 	if !satisfied {
 		newR = nil
-		s = !s
+		new = new.Not().(*bindingNode)
 	}
-	new := New()
-	new.captured = bn.captured
-	new.matching = s
 	new.bound = newB
 	new.referenced = newR
 	return new
@@ -212,7 +233,7 @@ func (bn *bindingNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
 			bn.bound.Eq(obn.bound) &&
 			bn.referenced.Eq(obn.referenced) {
 			new := New()
-			new.captured = UnionCaps(bn.captured, obn.captured)
+			new.caps = bn.caps.Union(obn.caps)
 			new.matching = bn.matching
 			new.bound = bn.bound
 			new.referenced = bn.referenced

@@ -18,6 +18,7 @@ package bindingenvironment
 
 import (
     "ltl/pkg/bindings"
+    "ltl/pkg/captures"
     "ltl/pkg/ltl"
 )
 
@@ -25,7 +26,7 @@ import (
 // names.
 type bindingEnvironment interface {
     ltl.Environment
-    captures() map[ltl.Token]struct{}
+    captures() *captures.Captures
     // bindings returns the set of Bindings in this Environment.  Bindings are
     // only provided by matching Environments.
     bindings() *bindings.Bindings
@@ -50,7 +51,7 @@ type bindingEnvironment interface {
 
 // Captures returns the set of captured Tokens in the provided Environment, or
 // nil if no tokens are captured.
-func Captures(env ltl.Environment) map[ltl.Token]struct{} {
+func Captures(env ltl.Environment) *captures.Captures {
     if be, ok := env.(bindingEnvironment); ok {
         return be.captures()
     }
@@ -94,22 +95,4 @@ func merge(a, b ltl.Environment) (bindingEnvironment, bool) {
         return be.merge(b)
     }
     return nil, false
-}
-
-func UnionCaps(a, b map[ltl.Token]struct{}) map[ltl.Token]struct{} {
-    if a == nil && b == nil {
-        return nil
-    }
-    newCaps := map[ltl.Token]struct{}{}
-    if a != nil {
-        for cap := range a {
-            newCaps[cap] = struct{}{}
-        }
-    }
-    if b != nil {
-        for cap := range b {
-            newCaps[cap] = struct{}{}
-        }
-    }
-    return newCaps
 }

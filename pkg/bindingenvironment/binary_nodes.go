@@ -17,6 +17,7 @@ package bindingenvironment
 import (
 	"fmt"
 	"ltl/pkg/bindings"
+	"ltl/pkg/captures"
 	"ltl/pkg/ltl"
 	"sort"
 	"strings"
@@ -46,7 +47,7 @@ func (bn *binaryNode) String() string {
 		ret = "BE_AND"
 	}
 	capStrs := []string{}
-	caps := bn.captures()
+	caps := bn.captures().Get(bn.matching)
 	if caps != nil {
 		for cap := range caps {
 			capStrs = append(capStrs, cap.String())
@@ -95,15 +96,8 @@ func (bn *binaryNode) Err() error {
 	return nil
 }
 
-func (bn *binaryNode) captures() map[ltl.Token]struct{} {
-	var left, right map[ltl.Token]struct{}
-	if bn.left.Matching() {
-		left = Captures(bn.left)
-	}
-	if bn.right.Matching() {
-		right = Captures(bn.right)
-	}
-	return UnionCaps(left, right)
+func (bn *binaryNode) captures() *captures.Captures {
+	return Captures(bn.left).Union(Captures(bn.right))
 }
 
 func (bn *binaryNode) bindings() *bindings.Bindings {

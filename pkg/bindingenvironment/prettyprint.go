@@ -43,7 +43,7 @@ func PrettyPrint(env ltl.Environment, prefix ...string) {
 			t = "OR"
 		}
 		capStrs := []string{}
-		caps := Captures(env)
+		caps := Captures(env).Get(env.Matching())
 		if caps != nil {
 			for cap := range caps {
 				capStrs = append(capStrs, cap.String())

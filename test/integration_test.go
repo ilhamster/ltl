@@ -141,7 +141,7 @@ func expect(op ltl.Operator, input *testInput, t *testing.T) {
 	if !input.wantBindings.Eq(be.Bindings(env)) {
 		t.Fatalf("Wanted Environment bindings %s, got %s", input.wantBindings, be.Bindings(env))
 	}
-	captured := be.Captures(env)
+	captured := be.Captures(env).Get(true)
 	if len(input.wantIndices) != len(captured) {
 		fmt.Println(op)
 		be.PrettyPrint(env)
