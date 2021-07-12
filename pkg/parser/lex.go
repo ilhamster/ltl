@@ -107,6 +107,7 @@ func (p *prefixNode) lookup(str string) int {
 }
 
 var (
+	// DefaultTokens is a default mapping of token strings to token values.
 	DefaultTokens = map[string]int{
 		"AND":        AND,
 		"LIMIT":      LIMIT,
@@ -120,12 +121,15 @@ var (
 		"RELEASE":    RELEASE,
 		"GLOBALLY":   GLOBALLY,
 	}
-	OpenParen  rune = '('
+	// OpenParen is a default open-parenthesis symbol.
+	OpenParen rune = '('
+	// CloseParen is a default close-parenthesis symbol.
 	CloseParen rune = ')'
-	// In this lexer, square brackets enclose text to be sent to a 'matcher' (a
-	// terminal ltl.Operator).  This text may itself contain square brackets,
-	// but they must be balanced.
-	OpenBracket  rune = '['
+	// OpenBracket is a default open-bracket symbol.  In this lexer, brackets
+	// enclose text to be sent to a 'matcher' (a terminal ltl.Operator).  This
+	// text may itself contain brackets, but they must be balanced.
+	OpenBracket rune = '['
+	// CloseBracket is a default close-bracket symbol.
 	CloseBracket rune = ']'
 )
 

@@ -26,13 +26,16 @@ import (
 // extractFunc extracts the bindings and tags from a token.
 type extractFunc func(name string, tok ltl.Token) (*bindings.Bindings, error)
 
-type binder struct {
+// Binder is an Operator capable of binding values from tokens.  A bound value
+// satisfies other bound and referenced instances of the same value.
+type Binder struct {
 	name         string
 	capture      bool
 	extractToken extractFunc
 }
 
-func (b *binder) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
+// Match performs an LTL match on the receiving Binder.
+func (b *Binder) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	if tok.EOI() {
 		return nil, be.New(be.Matching(false))
 	}
@@ -47,17 +50,21 @@ func (b *binder) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	return nil, be.New(ops...)
 }
 
-func (b *binder) String() string {
+func (b *Binder) String() string {
 	return fmt.Sprintf("[$%s<-]", b.name)
 }
 
-func (b *binder) Reducible() bool {
+// Reducible returns false for all Binders.
+func (b *Binder) Reducible() bool {
 	return false
 }
 
-type referencer binder
+// Referencer is an Operator capable of referencing values from tokens.  A
+// referenced value is satisfied by a bound instance of the same value.
+type Referencer Binder
 
-func (r *referencer) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
+// Match performs an LTL match on the receiving Referencer.
+func (r *Referencer) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	if tok.EOI() {
 		return nil, ltl.NotMatching
 	}
@@ -72,11 +79,12 @@ func (r *referencer) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	return nil, be.New(ops...)
 }
 
-func (r *referencer) String() string {
+func (r *Referencer) String() string {
 	return fmt.Sprintf("[$%s]", r.name)
 }
 
-func (r *referencer) Reducible() bool {
+// Reducible returns false for all Referencers.
+func (r *Referencer) Reducible() bool {
 	return false
 }
 
@@ -98,13 +106,13 @@ func NewBuilder(capture bool, extractToken func(name string, tok ltl.Token) (*bi
 // Bind returns an Operator which, on Match, applies the receiver's extraction
 // function to the Token to extract its bindings, returning a matching
 // Environment with those bindings.
-func (bb *Builder) Bind(name string) *binder {
-	return &binder{name: name, capture: bb.capture, extractToken: bb.extractToken}
+func (bb *Builder) Bind(name string) *Binder {
+	return &Binder{name: name, capture: bb.capture, extractToken: bb.extractToken}
 }
 
 // Reference returns an Operator which, on Match, applies the receiver's
 // extraction function to the Token to extract its bindings, returning a
 // non-matching Environment with those, and referencing those bindings.
-func (bb *Builder) Reference(name string) *referencer {
-	return &referencer{name: name, capture: bb.capture, extractToken: bb.extractToken}
+func (bb *Builder) Reference(name string) *Referencer {
+	return &Referencer{name: name, capture: bb.capture, extractToken: bb.extractToken}
 }

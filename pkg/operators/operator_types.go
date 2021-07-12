@@ -27,10 +27,12 @@ type UnaryOperator struct {
 	Child ltl.Operator
 }
 
+// Children returns the child of the receiver in a slice.
 func (uo UnaryOperator) Children() []ltl.Operator {
 	return []ltl.Operator{uo.Child}
 }
 
+// Reducible returns true if the receiver's child is reducible.
 func (uo UnaryOperator) Reducible() bool {
 	return uo.Child.Reducible()
 }
@@ -40,12 +42,14 @@ type BinaryOperator struct {
 	Left, Right ltl.Operator
 }
 
+// Children returns the children of the receiver in a slice.
 func (bo BinaryOperator) Children() []ltl.Operator {
 	return []ltl.Operator{bo.Left, bo.Right}
 }
 
+// Reducible returns true if the receiver's children are reducible.
 func (bo BinaryOperator) Reducible() bool {
-	return bo.Left.Reducible() || bo.Right.Reducible()
+	return bo.Left.Reducible() && bo.Right.Reducible()
 }
 
 // MatchBoth applies the provided ltl.Token to both child ltl.Operators of the
@@ -62,15 +66,17 @@ type NaryOperator struct {
 	ChildSlice []ltl.Operator
 }
 
+// Children returns the children of the receiver in a slice.
 func (no NaryOperator) Children() []ltl.Operator {
 	return no.ChildSlice
 }
 
+// Reducible returns true if the receiver's children are reducible.
 func (no NaryOperator) Reducible() bool {
 	for _, child := range no.ChildSlice {
-		if child.Reducible() {
-			return true
+		if !child.Reducible() {
+			return false
 		}
 	}
-	return false
+	return true
 }

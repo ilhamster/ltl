@@ -84,7 +84,7 @@ func applyBindings(b *bindings.Bindings, env ltl.Environment) ltl.Environment {
 }
 
 func matchIfSatisfied(env ltl.Environment) bool {
-    if be, ok := env.(*bindingNode); ok {
+    if be, ok := env.(*BindingNode); ok {
         return be.matching
     }
     return env.Matching()

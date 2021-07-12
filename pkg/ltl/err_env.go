@@ -19,7 +19,7 @@ type errEnv struct {
 }
 
 // ErrEnv returns an Erroring Environment associating the specified error.
-func ErrEnv(err error) errEnv {
+func ErrEnv(err error) Environment {
 	return errEnv{err}
 }
 

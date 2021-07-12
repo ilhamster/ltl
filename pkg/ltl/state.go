@@ -29,6 +29,7 @@ func (s State) String() string {
 	return "NotMatching"
 }
 
+// And returns the AND of the receiver and argument.
 func (s State) And(env Environment) Environment {
 	if env.Err() != nil {
 		return env
@@ -44,6 +45,7 @@ func (s State) And(env Environment) Environment {
 	return NotMatching
 }
 
+// Or returns the OR of the receiver and argument.
 func (s State) Or(env Environment) Environment {
 	if errEnv := EitherErroring(s, env); errEnv != nil {
 		return errEnv
@@ -59,6 +61,7 @@ func (s State) Or(env Environment) Environment {
 	return s
 }
 
+// Not returns the NOT of the receiver.
 func (s State) Not() Environment {
 	if s {
 		return NotMatching
@@ -66,14 +69,17 @@ func (s State) Not() Environment {
 	return Matching
 }
 
+// Matching returns the boolean value of the state.
 func (s State) Matching() bool {
 	return bool(s)
 }
 
+// Err returns nil for all States.
 func (s State) Err() error {
 	return nil
 }
 
+// Reducible returns true for all States.
 func (s State) Reducible() bool {
 	return true
 }

@@ -124,13 +124,13 @@ func (lif *ltlif) run(input string) {
 }
 
 const (
-	kCase    = "case"
-	kExplain = "explain"
-	kHelp    = "help"
-	kOp      = "op"
-	kQuit    = "quit"
-	kRun     = "run"
-	kCapture = "capture"
+	letterCase = "case"
+	explain    = "explain"
+	help       = "help"
+	op         = "op"
+	quit       = "quit"
+	run        = "run"
+	capture    = "capture"
 )
 
 func (lif *ltlif) do(in string) {
@@ -141,19 +141,19 @@ func (lif *ltlif) do(in string) {
 	parts := strings.SplitN(in, " ", 2)
 	cmd, remainder := parts[0], parts[1:]
 	switch cmd {
-	case kOp:
+	case op:
 		if len(remainder) != 1 {
 			break
 		}
 		lif.setOp(remainder[0])
 		return
-	case kRun:
+	case run:
 		if len(remainder) != 1 {
 			break
 		}
 		lif.run(remainder[0])
 		return
-	case kExplain:
+	case explain:
 		if len(remainder) != 1 {
 			break
 		}
@@ -183,9 +183,8 @@ func (lif *ltlif) do(in string) {
 			fmt.Println("Explaining tokens.")
 			return
 		default:
-			break
 		}
-	case kCapture:
+	case capture:
 		lif.capture = !lif.capture
 		msg := "In new operations, matching tokens will "
 		if !lif.capture {
@@ -194,7 +193,7 @@ func (lif *ltlif) do(in string) {
 		msg = msg + "be captured."
 		fmt.Println(msg)
 		return
-	case kCase:
+	case letterCase:
 		lif.caseSensitive = !lif.caseSensitive
 		msg := "In new operations, string matches will "
 		if !lif.caseSensitive {
@@ -203,7 +202,7 @@ func (lif *ltlif) do(in string) {
 		msg = msg + "be case-sensitive."
 		fmt.Println(msg)
 		return
-	case kHelp:
+	case help:
 		fmt.Println(`
 Set an operation, then feed it inputs.
   op <expression> : Parse <expression> and set it as the current operation.
@@ -217,7 +216,7 @@ Set an operation, then feed it inputs.
   case            : Toggle whether string matches should be case-sensitive.
   quit            : (or ctrl-C) exit ltltool.`)
 		return
-	case kQuit:
+	case quit:
 		os.Exit(0)
 	}
 	fmt.Printf("Unknown command '%s'\n", in)

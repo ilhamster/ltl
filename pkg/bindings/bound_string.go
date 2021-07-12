@@ -19,35 +19,38 @@ import (
 	"strings"
 )
 
-// boundString is a single string bound to a key.
-type boundString struct {
+// BoundString is a single string bound to a key.
+type BoundString struct {
 	key, value string
 }
 
-// Int returns an string value bound to a key.
-func String(key, value string) *boundString {
-	return &boundString{
+// String returns an string value bound to a key.
+func String(key, value string) *BoundString {
+	return &BoundString{
 		key:   key,
 		value: value,
 	}
 }
 
-func (bs *boundString) Type() string {
+// Type returns 'string' for BoundStrings.
+func (bs *BoundString) Type() string {
 	return "string"
 }
 
-func (bs *boundString) CompareValues(obv BoundValue) (int, error) {
-	obs, ok := obv.(*boundString)
+// CompareValues compares the receiver and argument.
+func (bs *BoundString) CompareValues(obv BoundValue) (int, error) {
+	obs, ok := obv.(*BoundString)
 	if !ok {
-		return 0, fmt.Errorf("BoundValue %s had type %T, expected *boundString", obv, obv)
+		return 0, fmt.Errorf("BoundValue %s had type %T, expected *BoundString", obv, obv)
 	}
 	return strings.Compare(bs.value, obs.value), nil
 }
 
-func (bs *boundString) Key() string {
+// Key returns the key of the receiver.
+func (bs *BoundString) Key() string {
 	return bs.key
 }
 
-func (bs *boundString) String() string {
+func (bs *BoundString) String() string {
 	return fmt.Sprintf("%s:%s", bs.key, bs.value)
 }

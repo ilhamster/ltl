@@ -53,20 +53,21 @@ func newSignal(names ...string) signals {
 	return sig
 }
 
-type signalToken signals
+// SignalToken is a Token type for multi-channel boolean signals.
+type SignalToken signals
 
 // NewToken returns a new Token containing a number of named boolean signals.
 // Signals are specified by string name, which may be prefixed with '!' to
 // indicate inversion.
-func NewToken(names ...string) signalToken {
-	return signalToken(newSignal(names...))
+func NewToken(names ...string) SignalToken {
+	return SignalToken(newSignal(names...))
 }
 
-func (sigt signalToken) String() string {
+func (sigt SignalToken) String() string {
 	return fmt.Sprintf("T %s", signals(sigt))
 }
 
-func (sigt signalToken) EOI() bool {
+func (sigt SignalToken) EOI() bool {
 	return false
 }
 
@@ -81,7 +82,7 @@ func (sigm signalMatcher) Children() []ltl.Operator {
 }
 
 func (sigm signalMatcher) Match(t ltl.Token) (ltl.Operator, ltl.Environment) {
-	sigt, ok := t.(signalToken)
+	sigt, ok := t.(SignalToken)
 	if !ok {
 		return nil, ltl.ErrEnv(errors.New("not a stok"))
 	}
@@ -100,7 +101,7 @@ func (sigm signalMatcher) Reducible() bool {
 // NewMatcher returns a new matcher matching a number of named boolean signals.
 // Signals are specified by string name, which may be prefixed with '!' to
 // indicate inversion.  On a Match, the resulting environment matches if the
-// Token is a signalToken containing all the signals specified by the matcher,
+// Token is a SignalToken containing all the signals specified by the matcher,
 // with the same inversion status.
 func NewMatcher(names ...string) ltl.Operator {
 	return signalMatcher(newSignal(names...))

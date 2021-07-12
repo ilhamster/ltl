@@ -34,6 +34,7 @@ type config struct {
 	capture       bool
 }
 
+// Option specifies a configuration option for a StringMatcher.
 type Option func(c *config)
 
 // Capture specifies whether matching tokens should be captured in the
@@ -52,23 +53,24 @@ func CaseSensitive(caseSensitive bool) Option {
 	}
 }
 
-type stringMatcher struct {
+// StringMatcher is a string-matching Operator.
+type StringMatcher struct {
 	s string
 	c *config
 }
 
-func new(s string, c *config) *stringMatcher {
+func new(s string, c *config) *StringMatcher {
 	if !c.caseSensitive {
 		s = strings.ToLower(s)
 	}
-	return &stringMatcher{s: s, c: c}
+	return &StringMatcher{s: s, c: c}
 }
 
 // New returns a new ltl.Operator that matches the provided string under the
 // provided Options.  Strings may be matched piecemeal; if, on a Match, the
 // provided Token is a prefix of the string to be matched, the returned Operator
 // will match the remaining suffix of the original string.
-func New(s string, opts ...Option) *stringMatcher {
+func New(s string, opts ...Option) *StringMatcher {
 	c := &config{}
 	for _, opt := range opts {
 		opt(c)
@@ -76,7 +78,7 @@ func New(s string, opts ...Option) *stringMatcher {
 	return new(s, c)
 }
 
-func (sm *stringMatcher) matchInternal(rtok *rt.RuneToken) (ltl.Operator, ltl.Environment) {
+func (sm *StringMatcher) matchInternal(rtok *rt.RuneToken) (ltl.Operator, ltl.Environment) {
 	if len(sm.s) == 0 || rtok.EOI() {
 		return nil, be.New(be.Matching(false))
 	}
@@ -106,7 +108,7 @@ func (sm *stringMatcher) matchInternal(rtok *rt.RuneToken) (ltl.Operator, ltl.En
 	return nil, env
 }
 
-func (sm *stringMatcher) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
+func (sm *StringMatcher) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	rtok, ok := tok.(*rt.RuneToken)
 	if !ok {
 		return nil, ltl.ErrEnv(errors.New("expected *rt.RuneToken"))
@@ -114,11 +116,11 @@ func (sm *stringMatcher) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	return sm.matchInternal(rtok)
 }
 
-func (sm stringMatcher) String() string {
+func (sm StringMatcher) String() string {
 	return fmt.Sprintf("[%s]", sm.s)
 }
 
-func (sm *stringMatcher) Reducible() bool {
+func (sm *StringMatcher) Reducible() bool {
 	return true
 }
 

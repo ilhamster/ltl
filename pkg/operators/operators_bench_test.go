@@ -23,12 +23,12 @@ import (
 )
 
 //                    0123456789 123456789 123456789 123456789 123456789 123456
-const kStreamInput = "leg eg egg geleg lee gellel legg eglegleg gel egg egg leg"
+const streamInput = "leg eg egg geleg lee gellel legg eglegleg gel egg egg leg"
 
-const kNoProf = ""
+const noProf = ""
 
 func benchmarkEggLeg(b *testing.B, count int, profFile string) {
-	if profFile != kNoProf {
+	if profFile != noProf {
 		f, err := os.Create(profFile)
 		if err != nil {
 			b.Fatalf("Failed to open profile file: %s", err)
@@ -41,7 +41,7 @@ func benchmarkEggLeg(b *testing.B, count int, profFile string) {
 		op             ltl.Operator
 		wantMatchCount int
 	}{{
-		kStreamInput,
+		streamInput,
 		// The farthest-apart 'egg' and 'leg' are 21 characters apart.
 		Eventually(Then(sm("egg"), Limit(21, Eventually(sm("leg"))))),
 		6*count - 1, // First input has 5 matches; each subsequent has 6.
@@ -68,6 +68,6 @@ func benchmarkEggLeg(b *testing.B, count int, profFile string) {
 	}
 }
 
-func BenchmarkEggLeg500(b *testing.B)   { benchmarkEggLeg(b, 500, kNoProf) }
-func BenchmarkEggLeg5000(b *testing.B)  { benchmarkEggLeg(b, 5000, kNoProf) }
-func BenchmarkEggLeg50000(b *testing.B) { benchmarkEggLeg(b, 50000, kNoProf) }
+func BenchmarkEggLeg500(b *testing.B)   { benchmarkEggLeg(b, 500, noProf) }
+func BenchmarkEggLeg5000(b *testing.B)  { benchmarkEggLeg(b, 5000, noProf) }
+func BenchmarkEggLeg50000(b *testing.B) { benchmarkEggLeg(b, 50000, noProf) }

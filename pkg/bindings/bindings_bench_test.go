@@ -21,8 +21,8 @@ import (
 	"testing"
 )
 
-// kNoProf should be used when no profiling is required.
-const kNoProf = ""
+// noProf should be used when no profiling is required.
+const noProf = ""
 
 func createBindings(b *testing.B, boundValues [][]BoundValue) []*Bindings {
 	bindings := make([]*Bindings, 0, len(boundValues))
@@ -170,49 +170,49 @@ var shortKeyLongStrings = [][]BoundValue{
 }
 
 func BenchmarkCombineShortKeyInts(b *testing.B) {
-	bench(b, combine, shortKeyInts, kNoProf)
+	bench(b, combine, shortKeyInts, noProf)
 }
 
 func BenchmarkSatisfyShortKeyInts(b *testing.B) {
-	bench(b, satisfy, shortKeyInts, kNoProf)
+	bench(b, satisfy, shortKeyInts, noProf)
 }
 
 func BenchmarkCombineLongKeyInts(b *testing.B) {
-	bench(b, combine, longKeyInts, kNoProf)
+	bench(b, combine, longKeyInts, noProf)
 }
 
 func BenchmarkSatisfyLongKeyInts(b *testing.B) {
-	bench(b, satisfy, longKeyInts, kNoProf)
+	bench(b, satisfy, longKeyInts, noProf)
 }
 
 func BenchmarkCombineShortKeyShortStrings(b *testing.B) {
-	bench(b, combine, shortKeyShortStrings, kNoProf)
+	bench(b, combine, shortKeyShortStrings, noProf)
 }
 
 func BenchmarkSatisfyShortKeyShortStrings(b *testing.B) {
-	bench(b, satisfy, shortKeyShortStrings, kNoProf)
+	bench(b, satisfy, shortKeyShortStrings, noProf)
 }
 
 func BenchmarkCombineLongKeyShortStrings(b *testing.B) {
-	bench(b, combine, longKeyShortStrings, kNoProf)
+	bench(b, combine, longKeyShortStrings, noProf)
 }
 
 func BenchmarkSatisfyLongKeyShortStrings(b *testing.B) {
-	bench(b, satisfy, longKeyShortStrings, kNoProf)
+	bench(b, satisfy, longKeyShortStrings, noProf)
 }
 
 func BenchmarkCombineShortKeyLongStrings(b *testing.B) {
-	bench(b, combine, shortKeyLongStrings, kNoProf)
+	bench(b, combine, shortKeyLongStrings, noProf)
 }
 
 func BenchmarkSatisfyShortKeyLongStrings(b *testing.B) {
-	bench(b, satisfy, shortKeyLongStrings, kNoProf)
+	bench(b, satisfy, shortKeyLongStrings, noProf)
 }
 
 func BenchmarkCombineLongKeyLongStrings(b *testing.B) {
-	bench(b, combine, longKeyLongStrings, kNoProf)
+	bench(b, combine, longKeyLongStrings, noProf)
 }
 
 func BenchmarkSatisfyLongKeyLongStrings(b *testing.B) {
-	bench(b, satisfy, longKeyLongStrings, kNoProf)
+	bench(b, satisfy, longKeyLongStrings, noProf)
 }

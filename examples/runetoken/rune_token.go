@@ -23,19 +23,22 @@ type RuneToken struct {
 	index int
 }
 
-// Returns a new RuneToken with the provided rune and index.
+// New returns a new RuneToken with the provided rune and index.
 func New(r rune, index int) *RuneToken {
 	return &RuneToken{r, index}
 }
 
+// EOI is always false for RuneTokens.
 func (st *RuneToken) EOI() bool {
 	return false
 }
 
+// Value returns the `rune` value of the receiving RuneToken.
 func (st *RuneToken) Value() rune {
 	return st.r
 }
 
+// Index returns the index of the receiving RuneToken.
 func (st *RuneToken) Index() int {
 	return st.index
 }

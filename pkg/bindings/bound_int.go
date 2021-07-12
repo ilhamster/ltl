@@ -18,36 +18,39 @@ import (
 	"fmt"
 )
 
-// boundInt is a single int bound to a key.
-type boundInt struct {
+// BoundInt is a single int bound to a key.
+type BoundInt struct {
 	key   string
 	value int
 }
 
 // Int returns an integer value bound to a key.
-func Int(key string, value int) *boundInt {
-	return &boundInt{
+func Int(key string, value int) *BoundInt {
+	return &BoundInt{
 		key:   key,
 		value: value,
 	}
 }
 
-func (bi *boundInt) Type() string {
+// Type returns 'int' for BoundInts.
+func (bi *BoundInt) Type() string {
 	return "int"
 }
 
-func (bi *boundInt) CompareValues(obv BoundValue) (int, error) {
-	obi, ok := obv.(*boundInt)
+// CompareValues compares the receiver and argument.
+func (bi *BoundInt) CompareValues(obv BoundValue) (int, error) {
+	obi, ok := obv.(*BoundInt)
 	if !ok {
-		return 0, fmt.Errorf("BoundValue %s had type %T, expected *boundInt", obv, obv)
+		return 0, fmt.Errorf("BoundValue %s had type %T, expected *BoundInt", obv, obv)
 	}
 	return bi.value - obi.value, nil
 }
 
-func (bi *boundInt) Key() string {
+// Key returns the key of the receiver.
+func (bi *BoundInt) Key() string {
 	return bi.key
 }
 
-func (bi *boundInt) String() string {
+func (bi *BoundInt) String() string {
 	return fmt.Sprintf("%s:%d", bi.key, bi.value)
 }

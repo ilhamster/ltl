@@ -28,7 +28,7 @@ func PrettyPrint(env ltl.Environment, prefix ...string) {
 	for _, p := range prefix {
 		prefixStr = prefixStr + p
 	}
-	fmt.Printf(prefixStr)
+	fmt.Print(prefixStr)
 	if env == nil {
 		fmt.Println("<nil>")
 		return
@@ -55,7 +55,7 @@ func PrettyPrint(env ltl.Environment, prefix ...string) {
 		fmt.Printf("Binding %s (%t) (b: %s) (c: %s)\n", t, v.Matching(), v.bound, strings.Join(capStrs, ", "))
 		PrettyPrint(v.left, prefixStr+"  ")
 		PrettyPrint(v.right, prefixStr+"  ")
-	case *bindingNode:
+	case *BindingNode:
 		fmt.Println(v.String())
 	default:
 		fmt.Println(ltl.State(env.Matching()))

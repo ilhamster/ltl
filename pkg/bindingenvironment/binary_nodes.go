@@ -59,14 +59,17 @@ func (bn *binaryNode) String() string {
 	return ret + fmt.Sprintf("(r:%t\n    | M%t/%s,\n     |C[%s] | %s,\n    | %s)", bn.hasRefs, bn.Matching(), bn.bound, strings.Join(capStrs, ", "), bn.left, bn.right)
 }
 
+// And returns the AND of the receiver and argument.
 func (bn *binaryNode) And(oe ltl.Environment) ltl.Environment {
 	return and(bn, oe)
 }
 
+// Or returs the OR of the receiver and argument.
 func (bn *binaryNode) Or(oe ltl.Environment) ltl.Environment {
 	return or(bn, oe)
 }
 
+// Not returns the NOT of the receiver.
 func (bn *binaryNode) Not() ltl.Environment {
 	// To avoid introducing a notNode type, we use DeMorgan's laws.
 	switch bn.t {
@@ -84,14 +87,17 @@ func (bn *binaryNode) Not() ltl.Environment {
 	return ltl.ErrEnv(fmt.Errorf("unknown binaryNode type %v", bn.t))
 }
 
+// Reducible is false for all binaryNodes.
 func (bn *binaryNode) Reducible() bool {
 	return false
 }
 
+// Matching returns the matching status of the receiver.
 func (bn *binaryNode) Matching() bool {
 	return bn.matching
 }
 
+// Err is nil for all binaryNodes.
 func (bn *binaryNode) Err() error {
 	return nil
 }
@@ -118,6 +124,13 @@ func (bn *binaryNode) applyBindings(b *bindings.Bindings) ltl.Environment {
 	return ltl.ErrEnv(fmt.Errorf("unknown binaryNode type %v", bn.t))
 }
 
+// merge attempts to merge the receiver and argument into a new
+// bindingEnvironment, simplifying the Environment.  Two nodes may be merged
+// iff:
+//  * Both are binaryNodes,
+//  * Both have the same type (OR|AND), matching status, reference-holding
+//    status, and bindings.
+//  * Each binaryNode's children can also be merged.
 func (bn *binaryNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
 	// a non-binaryNode cannot be equal to a binaryNode.
 	obn, ok := oe.(*binaryNode)

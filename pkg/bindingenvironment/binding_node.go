@@ -23,10 +23,10 @@ import (
 	"strings"
 )
 
-// bindingNode is the base type for bindingEnvironments.  A bare bindingNode
-// represents a set of bound key-value pairs.  A bindingNode with no bound
+// BindingNode is the base type for bindingEnvironments.  A bare BindingNode
+// represents a set of bound key-value pairs.  A BindingNode with no bound
 // values is immediately simplified to a simple Matching Environment.
-type bindingNode struct {
+type BindingNode struct {
 	matching   bool
 	caps       *captures.Captures
 	bound      *bindings.Bindings
@@ -34,11 +34,11 @@ type bindingNode struct {
 }
 
 // Option is used to build new bindingEnvironments.
-type Option func(bn *bindingNode)
+type Option func(bn *BindingNode)
 
 // Matching sets whether the bindingEnvironment is matching.  Defaults to true.
 func Matching(m bool) Option {
-	return func(bn *bindingNode) {
+	return func(bn *BindingNode) {
 		if bn.matching != m {
 			bn.matching = m
 			bn.caps = bn.caps.Not()
@@ -48,7 +48,7 @@ func Matching(m bool) Option {
 
 // Captured sets the bindingEnvironment's captured tokens.
 func Captured(toks ...ltl.Token) Option {
-	return func(bn *bindingNode) {
+	return func(bn *BindingNode) {
 		cap := map[ltl.Token]struct{}{}
 		for _, tok := range toks {
 			cap[tok] = struct{}{}
@@ -61,7 +61,7 @@ func Captured(toks ...ltl.Token) Option {
 // Bound sets the bindingEnvironment's bindings.  Defaults to no bindings.
 func Bound(b *bindings.Bindings) Option {
 	bp := &b
-	return func(bn *bindingNode) {
+	return func(bn *BindingNode) {
 		bn.bound = *bp
 	}
 }
@@ -69,16 +69,16 @@ func Bound(b *bindings.Bindings) Option {
 // Bound sets the bindingEnvironment's references.  Defaults to no references.
 func Referenced(r *bindings.Bindings) Option {
 	rp := &r
-	return func(bn *bindingNode) {
+	return func(bn *BindingNode) {
 		bn.referenced = *rp
 	}
 }
 
-// New returns a new bindingNode with the requested arguments applied.
-// By default, the returned bindingNode is matching, and has no bound or
+// New returns a new BindingNode with the requested arguments applied.
+// By default, the returned BindingNode is matching, and has no bound or
 // referenced values.
-func New(opts ...Option) *bindingNode {
-	ret := &bindingNode{
+func New(opts ...Option) *BindingNode {
+	ret := &BindingNode{
 		matching:   true,
 		bound:      nil,
 		referenced: nil,
@@ -89,7 +89,7 @@ func New(opts ...Option) *bindingNode {
 	return ret
 }
 
-func (bn *bindingNode) String() string {
+func (bn *BindingNode) String() string {
 	var ret []string
 	ret = append(ret, fmt.Sprintf("(%s/%t)", ltl.State(bn.Matching()), bn.matching))
 	if bn.bound.Length() > 0 {
@@ -110,32 +110,21 @@ func (bn *bindingNode) String() string {
 		})
 		ret = append(ret, fmt.Sprintf("CAP(%s)", strings.Join(capStrs, ", ")))
 	}
-	// caps = bn.notMatchingCaptured
-	// // if !bn.matching {
-	// // 	caps = bn.matchingCaptured
-	// // }
-	// if caps != nil && len(caps) > 0 {
-	// 	capStrs := []string{}
-	// 	for cap := range caps {
-	// 		capStrs = append(capStrs, cap.String())
-	// 	}
-	// 	sort.Slice(capStrs, func(a, b int) bool {
-	// 		return capStrs[a] < capStrs[b]
-	// 	})
-	// 	ret = append(ret, fmt.Sprintf("-CAP(%s)", strings.Join(capStrs, ", ")))
-	// }
 	return fmt.Sprintf("(%s)", strings.Join(ret, ", "))
 }
 
-func (bn *bindingNode) And(oe ltl.Environment) ltl.Environment {
+// And returns the AND of the receiver and argument.
+func (bn *BindingNode) And(oe ltl.Environment) ltl.Environment {
 	return and(bn, oe)
 }
 
-func (bn *bindingNode) Or(oe ltl.Environment) ltl.Environment {
+// Or returns the OR of the receiver and argument.
+func (bn *BindingNode) Or(oe ltl.Environment) ltl.Environment {
 	return or(bn, oe)
 }
 
-func (bn *bindingNode) Not() ltl.Environment {
+// Not returns the NOT of the receiver.
+func (bn *BindingNode) Not() ltl.Environment {
 	// Here and elsewhere, we avoid Options to avoid allocating a jillion
 	// closure functions in the critical path.
 	n := New()
@@ -146,40 +135,45 @@ func (bn *bindingNode) Not() ltl.Environment {
 	return n
 }
 
-func (bn *bindingNode) Matching() bool {
+// Matching returns false for any BindingNode that has references, since these
+// are still pending, and otherwise the node's matching status.
+func (bn *BindingNode) Matching() bool {
 	if bn.hasReferences() {
 		return false
 	}
 	return bn.matching
 }
 
-func (bn *bindingNode) Err() error {
+// Err returns nil for all BindingNodes.
+func (bn *BindingNode) Err() error {
 	return nil
 }
 
-func (bn *bindingNode) Reducible() bool {
+// Reducible returns true for BindingNodes with no bound values, references, or
+// captures.
+func (bn *BindingNode) Reducible() bool {
 	return bn.bound.Length() == 0 &&
 		bn.referenced.Length() == 0 &&
 		bn.caps.Reducible()
 }
 
-func (bn *bindingNode) captures() *captures.Captures {
+func (bn *BindingNode) captures() *captures.Captures {
 	return bn.caps
 }
 
-func (bn *bindingNode) bindings() *bindings.Bindings {
+func (bn *BindingNode) bindings() *bindings.Bindings {
 	if bn.Matching() {
 		return bn.bound
 	}
 	return nil
 }
 
-func (bn *bindingNode) hasReferences() bool {
+func (bn *BindingNode) hasReferences() bool {
 	return bn.referenced.Length() > 0
 }
 
 // applyBindings applies the provided Bindings to the receiver.  This returns
-// a new bindingNode with:
+// a new BindingNode with:
 //  * its bound field set to the receiver's bound field combinec with the
 //    provided Bindings;
 //  * its referenced field set to the receiver's referenced field satisfied with
@@ -192,7 +186,7 @@ func (bn *bindingNode) hasReferences() bool {
 // For performance, where the returned value is identical to the receiver, the
 // receiver itself is returned.
 // applyBindings must return an ltl.Environment, as it could return an ErrEnv.
-func (bn *bindingNode) applyBindings(b *bindings.Bindings) ltl.Environment {
+func (bn *BindingNode) applyBindings(b *bindings.Bindings) ltl.Environment {
 	if b.Length() == 0 {
 		return bn
 	}
@@ -220,15 +214,15 @@ func (bn *bindingNode) applyBindings(b *bindings.Bindings) ltl.Environment {
 	newR, satisfied := bn.referenced.Satisfy(newB)
 	if !satisfied {
 		newR = nil
-		new = new.Not().(*bindingNode)
+		new = new.Not().(*BindingNode)
 	}
 	new.bound = newB
 	new.referenced = newR
 	return new
 }
 
-func (bn *bindingNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
-	if obn, ok := oe.(*bindingNode); ok {
+func (bn *BindingNode) merge(oe ltl.Environment) (bindingEnvironment, bool) {
+	if obn, ok := oe.(*BindingNode); ok {
 		if bn.matching == obn.matching &&
 			bn.bound.Eq(obn.bound) &&
 			bn.referenced.Eq(obn.referenced) {

@@ -42,8 +42,8 @@ func EitherErroring(a, b Environment) Environment {
 	return nil
 }
 
-// A nil-safe replacement for op.Reducible().  nil Operators are always
-// Reducible.
+// Reducible is a nil-safe replacement for op.Reducible().  nil Operators are
+// always Reducible.
 func Reducible(op Operator) bool {
 	if op == nil {
 		return true
