@@ -21,10 +21,10 @@ import (
 	"testing"
 )
 
-var tagIndices = true
+var capture = true
 
 func sm(s string) ltl.Operator {
-	return smatch.New(s, smatch.TagIndices(tagIndices))
+	return smatch.New(s, smatch.Capture(capture))
 }
 
 type testInput struct {
@@ -41,7 +41,6 @@ func nm(s string) testInput {
 }
 
 func TestOperators(t *testing.T) {
-	tagIndices = true
 	type testCase struct {
 		op         ltl.Operator
 		testInputs []testInput
