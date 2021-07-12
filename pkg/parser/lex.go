@@ -165,6 +165,8 @@ func NewLexer(tokens map[string]int, matcherGenerator func(string) (ltl.Operator
 	}, nil
 }
 
+// Lex consumes input until a token has been identified, and returns it.  It
+// updates the provided lvalue with any token data.
 func (l *Lexer) Lex(lvalue *yySymType) int {
 	var r rune
 	var c int

@@ -66,7 +66,8 @@ func Bound(b *bindings.Bindings) Option {
 	}
 }
 
-// Bound sets the bindingEnvironment's references.  Defaults to no references.
+// Referenced sets the bindingEnvironment's references.  Defaults to no
+// references.
 func Referenced(r *bindings.Bindings) Option {
 	rp := &r
 	return func(bn *BindingNode) {

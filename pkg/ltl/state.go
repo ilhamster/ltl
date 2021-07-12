@@ -18,8 +18,10 @@ package ltl
 type State bool
 
 const (
+	// NotMatching represents a non-match.
 	NotMatching State = false
-	Matching    State = true
+	// Matching represents a match.
+	Matching State = true
 )
 
 func (s State) String() string {
