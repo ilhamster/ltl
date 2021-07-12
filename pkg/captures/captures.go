@@ -25,6 +25,7 @@ type Captures struct {
 	caps map[bool]map[ltl.Token]struct{}
 }
 
+// New returns a new, empty Captures set.
 func New() *Captures {
 	return &Captures{
 		caps: map[bool]map[ltl.Token]struct{}{

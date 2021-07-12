@@ -155,8 +155,6 @@ func TestCaptures(t *testing.T) {
 	}
 	for idx, test := range tests {
 		t.Run(fmt.Sprintf("test case %d", idx), func(t *testing.T) {
-			fmt.Println("caps:")
-			PrettyPrint(test.env)
 			gotCaptures := Captures(test.env).Get(true)
 			if len(gotCaptures) != len(test.wantCaptures) {
 				t.Fatalf("Wanted %d captures, got %d", len(test.wantCaptures), len(gotCaptures))

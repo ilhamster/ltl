@@ -108,6 +108,7 @@ func (sm *StringMatcher) matchInternal(rtok *rt.RuneToken) (ltl.Operator, ltl.En
 	return nil, env
 }
 
+// Match performs an LTL match on the receiving StringMatcher.
 func (sm *StringMatcher) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	rtok, ok := tok.(*rt.RuneToken)
 	if !ok {
@@ -120,6 +121,7 @@ func (sm StringMatcher) String() string {
 	return fmt.Sprintf("[%s]", sm.s)
 }
 
+// Reducible returns true for all StringMatchers.
 func (sm *StringMatcher) Reducible() bool {
 	return true
 }
