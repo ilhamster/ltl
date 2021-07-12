@@ -67,6 +67,7 @@ func (sigt SignalToken) String() string {
 	return fmt.Sprintf("T %s", signals(sigt))
 }
 
+// EOI returns false for all SignalTokens.
 func (sigt SignalToken) EOI() bool {
 	return false
 }
