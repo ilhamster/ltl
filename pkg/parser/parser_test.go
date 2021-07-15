@@ -45,13 +45,13 @@ func TestParser(t *testing.T) {
 		"normal parsing",
 		"[a] THEN [b]",
 		false,
-		10,
-		13, // After the expression
+		9,
+		12, // After the expression
 	}, {
 		"parse error",
 		"[a] [b] AND [c]",
 		true,
-		3,
+		4,
 		7, // After the [b]
 	}, {
 		"matcher error",
@@ -59,6 +59,12 @@ func TestParser(t *testing.T) {
 		true,
 		0,
 		3, // After the [$]
+	}, {
+		"lexing error",
+		"[a] WHEREUPON [b]",
+		true,
+		4,
+		5, // After the 'W'
 	}}
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {

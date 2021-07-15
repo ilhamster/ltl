@@ -172,7 +172,7 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 	var r rune
 	var c int
 	var err error
-	startOffset := l.offset
+	// startOffset := l.offset
 	// Consume runes until an EOF, error, or non-whitespace rune is
 	// encountered.
 	for {
@@ -189,7 +189,7 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 			break
 		}
 	}
-	l.lastTokenStartOffset = startOffset
+	l.lastTokenStartOffset = l.offset - 1
 	switch {
 	case r == OpenParen:
 		return LPAREN
@@ -203,11 +203,11 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 				break
 			}
 			r, c, err = l.r.ReadRune()
-			l.offset += c
 			if err == io.EOF {
 				l.err = fmt.Errorf("unexpected EOF at offset %d", l.offset)
 				return yyErrCode
 			}
+			l.offset += c
 			switch r {
 			case OpenBracket:
 				bracketDepth++
@@ -232,7 +232,6 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 		var num string
 		for {
 			r, c, err := l.r.ReadRune()
-			l.offset += c
 			if err != nil && err != io.EOF {
 				l.err = fmt.Errorf("read error at offset %d: %s", l.offset, err)
 				return yyErrCode
@@ -248,13 +247,13 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 				}
 				return NUM
 			}
+			l.offset += c
 			num = num + string(r)
 		}
 	default:
 		l.r.UnreadRune()
 		for {
 			r, c, err := l.r.ReadRune()
-			l.offset += c
 			if err != nil && err != io.EOF {
 				l.err = fmt.Errorf("read error at offset %d: %s", l.offset, err)
 				return yyErrCode
@@ -269,6 +268,7 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 				l.err = fmt.Errorf("lexing error at offset %d", l.offset)
 				return yyErrCode
 			}
+			l.offset += c
 			l.currentPrefixTree = next
 		}
 	}
