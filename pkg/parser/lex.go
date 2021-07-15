@@ -274,3 +274,10 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 func (l *Lexer) Error(e string) {
 	l.err = fmt.Errorf("parse error at offset %d: %s", l.offset, e)
 }
+
+// Offset returns the current offset of the receiving Lexer.  After ParseLTL(),
+// this is the end of the input if the parse was successful, or the offset where
+// the first error was discovered, if the parse was unsuccessful.
+func (l *Lexer) Offset() int {
+	return l.offset
+}

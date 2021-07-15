@@ -23,14 +23,15 @@ import (
 	"testing"
 )
 
-func parse(s string) (ltl.Operator, error) {
+func parse(s string) (ltl.Operator, int, error) {
 	l, err := NewLexer(DefaultTokens,
 		stringmatcher.Generator(),
 		bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return ParseLTL(l)
+	op, err := ParseLTL(l)
+	return op, l.Offset(), err
 }
 
 func TestParser(t *testing.T) {
@@ -38,27 +39,34 @@ func TestParser(t *testing.T) {
 		description string
 		input       string
 		wantErr     bool
+		wantOffset  int
 	}{{
 		"normal parsing",
 		"[a] THEN [b]",
 		false,
+		13, // After the expression
 	}, {
 		"parse error",
 		"[a] [b] AND [c]",
 		true,
+		7, // After the [b]
 	}, {
 		"matcher error",
 		"[$] AND [c]",
 		true,
+		3, // After the [$]
 	}}
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			_, err := parse(test.input)
+			_, gotOffset, err := parse(test.input)
 			if err != nil && !test.wantErr {
 				t.Fatalf("Parse expected no error, but got %s", err)
 			}
 			if err == nil && test.wantErr {
 				t.Fatalf("Parse expected an error, but got none")
+			}
+			if gotOffset != test.wantOffset {
+				t.Errorf("Reached offset %d, but wanted %d", gotOffset, test.wantOffset)
 			}
 		})
 	}
@@ -99,7 +107,7 @@ func TestParsingAsString(t *testing.T) {
 		"AND(NOT([a]),[b])",
 	}}
 	for _, test := range tests {
-		op, err := parse(test.input)
+		op, _, err := parse(test.input)
 		if err != nil {
 			t.Fatalf("Failed to parse: %s", err)
 		}
