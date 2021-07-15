@@ -136,12 +136,13 @@ var (
 // Lexer is a lexer used by ParseLTL to parse expression strings into LTL
 // Operations.
 type Lexer struct {
-	r                 *bufio.Reader
-	matcherGenerator  func(string) (ltl.Operator, error)
-	rootPrefixTree    *prefixNode
-	currentPrefixTree *prefixNode
-	offset            int
-	op                ltl.Operator
+	r                    *bufio.Reader
+	matcherGenerator     func(string) (ltl.Operator, error)
+	rootPrefixTree       *prefixNode
+	currentPrefixTree    *prefixNode
+	lastTokenStartOffset int
+	offset               int
+	op                   ltl.Operator
 	// yyLexer.Lex returns only an int, not also an error.  So, to signal a
 	// lexing error, Lexer::Lex must set an error (to be retrieved later with
 	// Lexer::Error).  If Lex sets a non-nil error, it should immediately return
@@ -171,6 +172,7 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 	var r rune
 	var c int
 	var err error
+	startOffset := l.offset
 	// Consume runes until an EOF, error, or non-whitespace rune is
 	// encountered.
 	for {
@@ -187,6 +189,7 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 			break
 		}
 	}
+	l.lastTokenStartOffset = startOffset
 	switch {
 	case r == OpenParen:
 		return LPAREN
@@ -280,4 +283,8 @@ func (l *Lexer) Error(e string) {
 // the first error was discovered, if the parse was unsuccessful.
 func (l *Lexer) Offset() int {
 	return l.offset
+}
+
+func (l *Lexer) LastTokenStartOffset() int {
+	return l.lastTokenStartOffset
 }
