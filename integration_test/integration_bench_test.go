@@ -16,8 +16,8 @@ package integrationtest_test
 
 import (
 	"fmt"
-	"ltl/examples/runetoken"
-	"ltl/pkg/ltl"
+	"github.com/ilhamster/ltl/examples/runetoken"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"os"
 	"runtime/pprof"
 	"testing"

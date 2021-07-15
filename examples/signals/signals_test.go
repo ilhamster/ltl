@@ -15,8 +15,8 @@
 package signals
 
 import (
-	"ltl/pkg/ltl"
-	ops "ltl/pkg/operators"
+	"github.com/ilhamster/ltl/pkg/ltl"
+	ops "github.com/ilhamster/ltl/pkg/operators"
 	"strings"
 	"testing"
 )

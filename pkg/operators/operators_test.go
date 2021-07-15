@@ -15,9 +15,9 @@
 package operators
 
 import (
-	rtok "ltl/examples/runetoken"
-	smatch "ltl/examples/stringmatcher"
-	"ltl/pkg/ltl"
+	rtok "github.com/ilhamster/ltl/examples/runetoken"
+	smatch "github.com/ilhamster/ltl/examples/stringmatcher"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"testing"
 )
 

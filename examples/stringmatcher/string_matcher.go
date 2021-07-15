@@ -21,11 +21,11 @@ package stringmatcher
 import (
 	"errors"
 	"fmt"
-	rt "ltl/examples/runetoken"
-	"ltl/pkg/binder"
-	be "ltl/pkg/bindingenvironment"
-	"ltl/pkg/bindings"
-	"ltl/pkg/ltl"
+	rt "github.com/ilhamster/ltl/examples/runetoken"
+	"github.com/ilhamster/ltl/pkg/binder"
+	be "github.com/ilhamster/ltl/pkg/bindingenvironment"
+	"github.com/ilhamster/ltl/pkg/bindings"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"strings"
 )
 

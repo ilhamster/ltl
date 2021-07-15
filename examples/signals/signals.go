@@ -19,7 +19,7 @@ package signals
 import (
 	"errors"
 	"fmt"
-	"ltl/pkg/ltl"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"strings"
 )
 

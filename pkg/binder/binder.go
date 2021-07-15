@@ -18,9 +18,9 @@ package binder
 
 import (
 	"fmt"
-	be "ltl/pkg/bindingenvironment"
-	"ltl/pkg/bindings"
-	"ltl/pkg/ltl"
+	be "github.com/ilhamster/ltl/pkg/bindingenvironment"
+	"github.com/ilhamster/ltl/pkg/bindings"
+	"github.com/ilhamster/ltl/pkg/ltl"
 )
 
 // extractFunc extracts the bindings and tags from a token.

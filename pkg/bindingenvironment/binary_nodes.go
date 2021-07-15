@@ -16,9 +16,9 @@ package bindingenvironment
 
 import (
 	"fmt"
-	"ltl/pkg/bindings"
-	"ltl/pkg/captures"
-	"ltl/pkg/ltl"
+	"github.com/ilhamster/ltl/pkg/bindings"
+	"github.com/ilhamster/ltl/pkg/captures"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"sort"
 	"strings"
 )

@@ -16,7 +16,7 @@
 // in matches.
 package captures
 
-import "ltl/pkg/ltl"
+import "github.com/ilhamster/ltl/pkg/ltl"
 
 // Captures stores sets of tokens captured by Environments.
 type Captures struct {

@@ -17,9 +17,9 @@
 package bindingenvironment
 
 import (
-    "ltl/pkg/bindings"
-    "ltl/pkg/captures"
-    "ltl/pkg/ltl"
+    "github.com/ilhamster/ltl/pkg/bindings"
+    "github.com/ilhamster/ltl/pkg/captures"
+    "github.com/ilhamster/ltl/pkg/ltl"
 )
 
 // bindingEnvironment describes an Environment capable of binding values to

@@ -16,8 +16,8 @@ package bindingenvironment
 
 import (
 	"fmt"
-	"ltl/pkg/bindings"
-	"ltl/pkg/ltl"
+	"github.com/ilhamster/ltl/pkg/bindings"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"testing"
 )
 

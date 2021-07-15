@@ -15,7 +15,7 @@
 package operators
 
 import (
-	"ltl/pkg/ltl"
+	"github.com/ilhamster/ltl/pkg/ltl"
 )
 
 // A collection of base types for non-terminal ltl.Operator implementations.

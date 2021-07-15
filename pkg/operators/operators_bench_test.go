@@ -15,8 +15,8 @@
 package operators
 
 import (
-	rt "ltl/examples/runetoken"
-	"ltl/pkg/ltl"
+	rt "github.com/ilhamster/ltl/examples/runetoken"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"os"
 	"runtime/pprof"
 	"testing"

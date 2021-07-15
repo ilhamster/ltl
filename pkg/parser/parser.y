@@ -15,8 +15,8 @@
 // limitations under the License.
 package parser
 import (
-    "ltl/pkg/ltl"
-    ops "ltl/pkg/operators"
+    "github.com/ilhamster/ltl/pkg/ltl"
+    ops "github.com/ilhamster/ltl/pkg/operators"
 )
 %}
 

@@ -17,7 +17,7 @@ package operators
 
 import (
 	"fmt"
-	"ltl/pkg/ltl"
+	"github.com/ilhamster/ltl/pkg/ltl"
 )
 
 // StopAtFirstMatch matches the provided Operator with the provided Token.

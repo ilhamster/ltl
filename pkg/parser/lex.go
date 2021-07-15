@@ -18,8 +18,8 @@ package parser
 import (
 	"bufio"
 	"fmt"
+	"github.com/ilhamster/ltl/pkg/ltl"
 	"io"
-	"ltl/pkg/ltl"
 	"sort"
 	"strconv"
 	"strings"

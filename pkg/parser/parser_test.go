@@ -16,9 +16,9 @@ package parser
 
 import (
 	"bufio"
-	"ltl/examples/stringmatcher"
-	"ltl/pkg/ltl"
-	ops "ltl/pkg/operators"
+	"github.com/ilhamster/ltl/examples/stringmatcher"
+	"github.com/ilhamster/ltl/pkg/ltl"
+	ops "github.com/ilhamster/ltl/pkg/operators"
 	"strings"
 	"testing"
 )
