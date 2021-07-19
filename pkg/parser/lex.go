@@ -172,7 +172,6 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 	var r rune
 	var c int
 	var err error
-	// startOffset := l.offset
 	// Consume runes until an EOF, error, or non-whitespace rune is
 	// encountered.
 	for {
