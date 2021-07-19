@@ -285,6 +285,7 @@ func (l *Lexer) Offset() int {
 	return l.offset
 }
 
+// LastTokenStartOffset returns the start offset of the last lexed token.
 func (l *Lexer) LastTokenStartOffset() int {
 	return l.lastTokenStartOffset
 }
