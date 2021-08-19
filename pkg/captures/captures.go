@@ -65,19 +65,18 @@ func (c *Captures) Union(oc *Captures) *Captures {
 	if oc == nil {
 		return c
 	}
-	ret := &Captures{
-		caps: map[bool]map[ltl.Token]struct{}{
-			true:  c.caps[true],
-			false: c.caps[false],
-		},
-	}
-	for m := range oc.caps {
-		if oc.caps[m] != nil {
-			for tok := range oc.caps[m] {
-				ret.Capture(m, tok)
+	ret := &Captures{map[bool]map[ltl.Token]struct{}{}}
+
+	for _, captureMap := range []map[bool]map[ltl.Token]struct{}{c.caps, oc.caps} {
+		for matchingState := range captureMap {
+			if captureMap[matchingState] != nil {
+				for tok := range captureMap[matchingState] {
+					ret.Capture(matchingState, tok)
+				}
 			}
 		}
 	}
+
 	return ret
 }
 
