@@ -199,6 +199,7 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 		bracketDepth := 1
 		for {
 			if bracketDepth == 0 {
+				matcherStr = strings.TrimSuffix(matcherStr, "]")
 				break
 			}
 			r, c, err = l.r.ReadRune()
@@ -212,9 +213,8 @@ func (l *Lexer) Lex(lvalue *yySymType) int {
 				bracketDepth++
 			case CloseBracket:
 				bracketDepth--
-			default:
-				matcherStr += string(r)
 			}
+			matcherStr += string(r)
 		}
 		op, err := l.matcherGenerator(matcherStr)
 		if err != nil {
