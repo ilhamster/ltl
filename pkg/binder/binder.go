@@ -43,6 +43,9 @@ func (b *Binder) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	if err != nil {
 		return nil, ltl.ErrEnv(err)
 	}
+	if bs == nil {
+		return nil, ltl.NotMatching
+	}
 	ops := []be.Option{be.Bound(bs)}
 	if b.capture {
 		ops = append(ops, be.Captured(tok))
@@ -71,6 +74,9 @@ func (r *Referencer) Match(tok ltl.Token) (ltl.Operator, ltl.Environment) {
 	bs, err := r.extractToken(r.name, tok)
 	if err != nil {
 		return nil, ltl.ErrEnv(err)
+	}
+	if bs == nil {
+		return nil, ltl.NotMatching
 	}
 	ops := []be.Option{be.Referenced(bs)}
 	if r.capture {
